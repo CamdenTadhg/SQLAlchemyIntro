@@ -1,6 +1,6 @@
 """Blogly application."""
 
-from flask import Flask, request, render_template, redirect, flash, session
+from flask import Flask, request, render_template, redirect
 from models import db, connect_db, User
 from flask_debugtoolbar import DebugToolbarExtension
 
@@ -49,7 +49,6 @@ def add_user():
 @app.route('/users/<user_id>')
 def show_user(user_id):
     """shows details of a user"""
-    print(user_id)
     user = User.query.get_or_404(user_id)
     return render_template('userdetail.html', user=user)
 
@@ -81,9 +80,6 @@ def delete_user(user_id):
     return redirect('/users')
 
 
-## make all routes
-## style pages now that I can see them. 
-## add testing
 ## create and add full name method
 ## list users in order by last_name, first_name
 ## turn full name into a property

@@ -30,6 +30,7 @@ class BloglyViewsTestCase(TestCase):
         """Clean up any fouled transactions."""
 
         db.session.rollback()
+        User.query.delete()
 
     def test_redirection(self):
         with app.test_client() as client:

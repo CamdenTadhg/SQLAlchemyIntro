@@ -21,3 +21,8 @@ class User(db.Model):
         """show info about a user"""
         user = self
         return f"<User {user.id} {user.first_name} {user.last_name}>"
+    
+    def get_full_name(self):
+        """return the full name of the user"""
+        user = self
+        return f"{user.first_name} {user.last_name}"
