@@ -27,7 +27,8 @@ def home_page():
 @app.route('/users')
 def show_user_list():
     """shows a list of all site users"""
-    users = User.query.all()
+    users = User.query.order_by(User.last_name, User.first_name).all()
+    # users = db.session.execute(db.select(User).order_by(User.last_name, User.first_name))
     return render_template("users.html", users=users)
 
 @app.route('/users/new')
@@ -80,6 +81,5 @@ def delete_user(user_id):
     return redirect('/users')
 
 
-## create and add full name method
 ## list users in order by last_name, first_name
 ## turn full name into a property
