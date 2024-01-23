@@ -5,6 +5,10 @@
 {% block content %}
 <img src="{{user.image_url}}" alt="{{user.first_name}}{{user.last_name}}">
 <h1>{{user.first_name}} {{user.last_name}}</h1>
-<button action="/users/{{user.id}}/edit">Edit</button>
-<button action="/users/{{user.id}}/delete" method="POST">Delete</button>
+<form action="/users/{{user.id}}/edit">
+    <button>Edit</button>
+</form>
+<form action="/users/{{user.id}}/delete" method="POST">
+    <button>Delete</button>
+</form>
 {% endblock %}

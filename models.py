@@ -15,7 +15,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
-    image_url = db.Column(db.String(200), default='/static/user-profile-icon.png')
+    image_url = db.Column(db.String(500), default='/static/user-profile-icon.png')
 
     def __repr__(self):
         """show info about a user"""
