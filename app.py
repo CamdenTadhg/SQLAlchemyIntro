@@ -14,6 +14,8 @@ app.config['DEBUT_TB_INTERCEPT_REDIRECTS'] = False
 
 debug=DebugToolbarExtension(app)
 
+app.app_context().push()
+
 connect_db(app)
 db.create_all()
 
