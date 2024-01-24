@@ -9,7 +9,7 @@
             <input type="text" name="title" value="{{post.title}}">
         </label>
         <label for="content">Content
-            <textarea name="content" rows="4" cols="50" value="{{post.content}}"></textarea>
+            <textarea name="content" rows="4" cols="50">{{post.content}}</textarea>
         </label>
     <a class="btn" href="/posts/{{post.id}}">Cancel</a>
     <button type="submit">Edit</button>

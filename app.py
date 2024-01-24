@@ -50,7 +50,7 @@ def add_user():
 def show_user(user_id):
     """shows details of a user"""
     user = User.query.get_or_404(user_id)
-    posts = db.session.execute(db.select(Post).where(user_id == user_id)).scalars()
+    posts = db.session.execute(db.select(Post).where(Post.user_id == user_id)).scalars()
     return render_template('userdetail.html', user=user, posts=posts)
 
 @app.route('/users/<user_id>/edit')
@@ -80,15 +80,61 @@ def delete_user(user_id):
     db.session.commit()
     return redirect('/users')
 
+@app.route('/users/<user_id>/posts/new')
+def show_new_post_form(user_id):
+    """shows a form for adding a new post"""
+    user = User.query.get_or_404(user_id)
+    return render_template("newpost.html", user=user)
 
-# revise user detail page
-# create new post form
-# create edit post form
-# create post detail form
-# create routes
-# update & add tests
-# make a homepage that shows 5 most recent posts
-# show friendly date
-# notify user of form errors and sucecessful submissions
-# add a custom 404 error page
-# cascade deletion of users
+@app.route('/users/<user_id>/posts/new', methods=["POST"])
+def add_post(user_id):
+    """adds new post to appropriate user"""
+    title = request.form['title']
+    content = request.form['content']
+    new_post = Post(title = title, content = content, user_id = user_id)
+    db.session.add(new_post)
+    db.session.commit()
+    return redirect(f'/users/{user_id}')
+
+@app.route('/posts/<post_id>')
+def show_post(post_id):
+    """shows an individual post"""
+    post = Post.query.get_or_404(post_id)
+    user = post.user
+    return render_template('postdetail.html', post=post, user=user)
+
+@app.route('/posts/<post_id>/edit')
+def show_post_edit_form(post_id):
+    "shows the form for editing a post"
+    post = Post.query.get_or_404(post_id)
+    return render_template('postedit.html', post=post)
+
+@app.route('/posts/<post_id>/edit', methods=["POST"])
+def edit_post(post_id):
+    title = request.form['title']
+    content = request.form['content']
+    post = Post.query.get_or_404(post_id)
+    post.title = title
+    post.content = content
+    db.session.add(post)
+    db.session.commit()
+    return redirect(f'/posts/{post_id}')
+
+@app.route('/posts/<post_id>/delete', methods=["POST"])
+def delete_post(post_id):
+    """deletes post"""
+    post = Post.query.get_or_404(post_id)
+    user = post.user
+    Post.query.filter_by(id=post_id).delete()
+    db.session.commit()
+    return redirect(f'/users/{user.id}')
+
+
+# 8 create routes
+# 7 style pages as needed
+# 6 update & add tests
+# 5 make a homepage that shows 5 most recent posts
+# 4 show friendly date
+# 3 notify user of form errors and sucecessful submissions
+# 2 add a custom 404 error page
+# 1 cascade deletion of users

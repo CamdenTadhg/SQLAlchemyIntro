@@ -4,7 +4,7 @@
 
 {% block content %}
 <h1>Create a new post</h1>
-<form action="users/{{user.id}}/posts/new" method="POST">
+<form action="/users/{{user.id}}/posts/new" method="POST">
         <label for="title">Title
             <input type="text" name="title">
         </label>
