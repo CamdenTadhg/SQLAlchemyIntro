@@ -3,7 +3,7 @@
 {% block title %}User Detail Page{% endblock %}
 
 {% block content %}
-<img src="{{user.image_url}}" alt="{{user.first_name}}{{user.last_name}}">
+<img src="{{user.image_url}}" alt="{{user.full_name}}">
 <h1>{{user.full_name}}</h1>
 <form action="/users/{{user.id}}/edit">
     <button>Edit</button>

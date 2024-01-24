@@ -1,5 +1,6 @@
 """Models for Blogly."""
 from flask_sqlalchemy import SQLAlchemy
+from datetime import datetime
 
 db = SQLAlchemy()
 
@@ -15,7 +16,7 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     first_name = db.Column(db.String(50), nullable=False)
     last_name = db.Column(db.String(50), nullable=False)
-    image_url = db.Column(db.String(500), default='/static/user-profile-icon.png')
+    image_url = db.Column(db.String(500), default='https://static.vecteezy.com/system/resources/previews/002/318/271/original/user-profile-icon-free-vector.jpg')
 
     def __repr__(self):
         """show info about a user"""
@@ -25,5 +26,17 @@ class User(db.Model):
     @property
     def full_name(self):
         """return the full name of the user"""
-        user = self
-        return f"{user.first_name} {user.last_name}"
+        return f"{self.first_name} {self.last_name}"
+    
+class Post(db.Model):
+    """Post model for blogly app"""
+
+    __tablename__ = "posts"
+
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
+    title = db.Column(db.Text, nullable=False)
+    content = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.Timestamp, nullable=False, default=datetime.now())
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    user = db.relationship('User', backref="posts")

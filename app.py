@@ -27,8 +27,7 @@ def home_page():
 @app.route('/users')
 def show_user_list():
     """shows a list of all site users"""
-    users = User.query.order_by(User.last_name, User.first_name).all()
-    # users = db.session.execute(db.select(User).order_by(User.last_name, User.first_name))
+    users = db.session.execute(db.select(User).order_by(User.last_name, User.first_name)).scalars()
     return render_template("users.html", users=users)
 
 @app.route('/users/new')
@@ -76,10 +75,22 @@ def edit_user(user_id):
 @app.route('/users/<user_id>/delete', methods=["POST"])
 def delete_user(user_id):
     """deletes user from the database"""
-    User.query.filter_by(id=user_id).delete()
+    # User.query.filter_by(id=user_id).delete()
+    db.session.execute(db.select(User).where(User.id==user_id).delete())
     db.session.commit()
     return redirect('/users')
 
 
-## list users in order by last_name, first_name
-## turn full name into a property
+# revise the whole program based on current SQLAlchemy syntax
+# add model for Posts
+# revise user detail page
+# create new post form
+# create edit post form
+# create post detail form
+# create routes
+# update & add tests
+# make a homepage that shows 5 most recent posts
+# show friendly date
+# notify user of form errors and sucecessful submissions
+# add a custom 404 error page
+# cascade deletion of users
