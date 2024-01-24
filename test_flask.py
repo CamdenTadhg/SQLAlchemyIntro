@@ -1,13 +1,14 @@
 from unittest import TestCase
 
 from app import app
-from models import db, User
+from models import db, User, Post, connect_db
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///blogly_test'
 app.config['SQLALCHEMY_ECHO'] = False
 app.config['TESTING'] = True
 app.config['DEBUG_TB_HOSTS'] = ['dont-show-debug-toolbar']
 
+connect_db(app)
 db.drop_all()
 db.create_all()
 
@@ -15,16 +16,21 @@ class BloglyViewsTestCase(TestCase):
     """Tests for views for Blogly app."""
 
     def setUp(self):
-        """Add sample user."""
+        """Add sample user and sample post."""
 
+        Post.query.delete()
         User.query.delete()
-
+        
         user = User(first_name="Jane", last_name="Doe", image_url='/static/user-profile-icon.png')
         db.session.add(user)
         db.session.commit()
 
         self.user_id = user.id
         self.user = user
+
+        post = Post(title="test post", content="test post content", user_id = user.id)
+        db.session.add(post)
+        db.session.commit()
 
     def tearDown(self):
         """Clean up any fouled transactions."""
@@ -80,7 +86,7 @@ class BloglyViewsTestCase(TestCase):
 
     def test_show_user(self):
         with app.test_client() as client:
-            test_user = User.query.filter_by(first_name="Jane").first()
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
             user_id = test_user.id
             resp = client.get(f'/users/{user_id}')
             html=resp.get_data(as_text=True)
@@ -90,7 +96,7 @@ class BloglyViewsTestCase(TestCase):
 
     def test_show_edit_form(self):
         with app.test_client() as client:
-            test_user = User.query.filter_by(first_name="Jane").first()
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
             user_id = test_user.id
             resp = client.get(f'/users/{user_id}/edit')
             html = resp.get_data(as_text=True)
@@ -100,7 +106,7 @@ class BloglyViewsTestCase(TestCase):
 
     def test_edit_user(self):
         with app.test_client() as client:
-            test_user = User.query.filter_by(first_name="Jane").first()
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
             user_id = test_user.id
             resp = client.post(f'/users/{user_id}/edit', data={'first-name': 'John', 'last-name': 'Doe', 'image-url':'/static/user-profile-icon.png' })
             
@@ -110,7 +116,7 @@ class BloglyViewsTestCase(TestCase):
     
     def test_edit_user_redirect(self):
         with app.test_client() as client:
-            test_user = User.query.filter_by(first_name="Jane").first()
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
             user_id = test_user.id
             resp = client.post(f'/users/{user_id}/edit', data={'first-name': 'John', 'last-name': 'Doe', 'image-url':'/static/user-profile-icon.png' }, follow_redirects=True)
             html = resp.get_data(as_text=True)
@@ -120,6 +126,7 @@ class BloglyViewsTestCase(TestCase):
 
     def test_delete_user(self):
         with app.test_client() as client:
+            Post.query.delete()
             resp = client.post('/users/1/delete')
             
             self.assertEqual(resp.status_code, 302)
@@ -127,10 +134,21 @@ class BloglyViewsTestCase(TestCase):
 
     def test_delete_user(self):
         with app.test_client() as client:
-            test_user = User.query.filter_by(first_name="Jane").first()
+            Post.query.delete()
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
             user_id = test_user.id
             resp = client.post(f'/users/{user_id}/delete', follow_redirects=True)
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
             self.assertNotIn('Jane Doe', html)
+
+    def test_show_new_post_form(self):
+        with app.test_client() as client:
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
+            user_id = test_user.id
+            resp = client.get(f'/users/{user_id}/posts/new')
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Create a new post', html)

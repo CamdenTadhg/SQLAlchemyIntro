@@ -40,7 +40,10 @@ def add_user():
     """adds user to the database"""
     first_name = request.form["first-name"]
     last_name = request.form["last-name"]
-    image_url = request.form["image-url"]
+    if request.form["image-url"]:
+        image_url = request.form["image-url"]
+    else:
+        image_url = 'https://static.vecteezy.com/system/resources/previews/002/318/271/original/user-profile-icon-free-vector.jpg'
     new_user = User(first_name = first_name, last_name = last_name, image_url=image_url)
     db.session.add(new_user)
     db.session.commit()
@@ -130,8 +133,6 @@ def delete_post(post_id):
     return redirect(f'/users/{user.id}')
 
 
-# 8 create routes
-# 7 style pages as needed
 # 6 update & add tests
 # 5 make a homepage that shows 5 most recent posts
 # 4 show friendly date
