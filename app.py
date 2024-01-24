@@ -3,6 +3,7 @@
 from flask import Flask, request, render_template, redirect
 from models import db, connect_db, User, Post
 from flask_debugtoolbar import DebugToolbarExtension
+from datetime import datetime
 
 app = Flask(__name__)
 
@@ -21,8 +22,9 @@ db.create_all()
 
 @app.route('/')
 def home_page():
-    """redirects to user list"""
-    return redirect('/users')
+    """home page displays 5 most recent posts"""
+    posts = db.session.execute(db.select(Post).order_by(Post.created_at.desc()).limit(5)).scalars()
+    return render_template("home.html", posts=posts)
 
 @app.route('/users')
 def show_user_list():
@@ -94,7 +96,7 @@ def add_post(user_id):
     """adds new post to appropriate user"""
     title = request.form['title']
     content = request.form['content']
-    new_post = Post(title = title, content = content, user_id = user_id)
+    new_post = Post(title = title, content = content, created_at = datetime.now(), user_id = user_id)
     db.session.add(new_post)
     db.session.commit()
     return redirect(f'/users/{user_id}')
@@ -133,9 +135,9 @@ def delete_post(post_id):
     return redirect(f'/users/{user.id}')
 
 
-# 6 update & add tests
 # 5 make a homepage that shows 5 most recent posts
 # 4 show friendly date
 # 3 notify user of form errors and sucecessful submissions
 # 2 add a custom 404 error page
 # 1 cascade deletion of users
+# 0 run all tests again then refill database

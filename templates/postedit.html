@@ -3,7 +3,7 @@
 {% block title %}Edit Post Form{% endblock %}
 
 {% block content %}
-<h1>Create a new post</h1>
+<h1>Edit a post</h1>
 <form action="/posts/{{post.id}}/edit" method="POST">
         <label for="title">Title
             <input type="text" name="title" value="{{post.title}}">

@@ -40,3 +40,7 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     user = db.relationship('User', backref="posts")
+
+    def __repr__(self):
+        """show info about a post"""
+        return f"<Post {self.id} {self.title} {self.user_id}>"
