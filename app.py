@@ -1,7 +1,7 @@
 """Blogly application."""
 
 from flask import Flask, request, render_template, redirect
-from models import db, connect_db, User
+from models import db, connect_db, User, Post
 from flask_debugtoolbar import DebugToolbarExtension
 
 app = Flask(__name__)
@@ -50,7 +50,8 @@ def add_user():
 def show_user(user_id):
     """shows details of a user"""
     user = User.query.get_or_404(user_id)
-    return render_template('userdetail.html', user=user)
+    posts = db.session.execute(db.select(Post).where(user_id == user_id)).scalars()
+    return render_template('userdetail.html', user=user, posts=posts)
 
 @app.route('/users/<user_id>/edit')
 def show_edit_form(user_id):
@@ -75,14 +76,11 @@ def edit_user(user_id):
 @app.route('/users/<user_id>/delete', methods=["POST"])
 def delete_user(user_id):
     """deletes user from the database"""
-    # User.query.filter_by(id=user_id).delete()
-    db.session.execute(db.select(User).where(User.id==user_id).delete())
+    User.query.filter_by(id=user_id).delete()
     db.session.commit()
     return redirect('/users')
 
 
-# revise the whole program based on current SQLAlchemy syntax
-# add model for Posts
 # revise user detail page
 # create new post form
 # create edit post form
