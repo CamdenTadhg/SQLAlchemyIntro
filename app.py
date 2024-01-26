@@ -135,9 +135,8 @@ def delete_post(post_id):
     return redirect(f'/users/{user.id}')
 
 
-# 5 make a homepage that shows 5 most recent posts
-# 4 show friendly date
-# 3 notify user of form errors and sucecessful submissions
-# 2 add a custom 404 error page
-# 1 cascade deletion of users
+# 4 When listing the posts (on the post index page, the homepage, and the user detail page), show a friendly-looking version of the date, like "May 1, 2015, 10:30AM"
+# 3 Use the flask flash message feature to notify about form errors/successful submissions
+# 2 Research how to make a custom page that appears when a 404 error happens in Flask. Make such a page
+# 1 When a user is deleted, the related posts should be deleted too. 
 # 0 run all tests again then refill database
