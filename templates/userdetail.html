@@ -6,19 +6,19 @@
 <img src="{{user.image_url}}" alt="{{user.full_name}}">
 <h1>{{user.full_name}}</h1>
 <form action="/users/{{user.id}}/edit">
-    <button>Edit</button>
+    <button class="btn btn-primary">Edit</button>
 </form>
 <form action="/users/{{user.id}}/delete" method="POST">
-    <button>Delete</button>
+    <button class="btn btn-danger">Delete</button>
 </form>
 
 <h3>Posts</h3>
 <ul>
     {% for post in posts %}
-    <li><a href='/posts/{{post.id}}'>{{post.title}}</a>({{post.created_at.strftime('%a %m %d %Y, %I:%M %p')}})</li>
+    <li><a href='/posts/{{post.id}}'>{{post.title}}</a>({{post.nice_date}})</li>
     {% endfor %}
 </ul>
 <form action="/users/{{user.id}}/posts/new">
-    <button>Add Post</button>
+    <button class="btn btn-secondary">Add Post</button>
 </form>
 {% endblock %}

@@ -26,6 +26,11 @@ def home_page():
     posts = db.session.execute(db.select(Post).order_by(Post.created_at.desc()).limit(5)).scalars()
     return render_template("home.html", posts=posts)
 
+@app.errorhandler(404)
+def page_not_found():
+    return render_template('404.html'), 404
+
+#USER ROUTES
 @app.route('/users')
 def show_user_list():
     """shows a list of all site users"""
@@ -125,6 +130,14 @@ def add_post(user_id):
     flash('New post added', 'success')
     return redirect(f'/users/{user_id}')
 
+#POST ROUTES
+@app.route('/posts')
+def show_posts():
+    """shows all posts"""
+    posts = db.session.execute(db.select(Post).order_by(Post.created_at.desc())).scalars()
+    return render_template('posts.html', posts=posts)
+
+
 @app.route('/posts/<post_id>')
 def show_post(post_id):
     """shows an individual post"""
@@ -166,10 +179,24 @@ def delete_post(post_id):
     flash('Post deleted', 'success')
     return redirect(f'/users/{user.id}')
 
-@app.errorhandler(404)
-def page_not_found():
-    return render_template('404.html'), 404
+#TAG ROUTES
 
 
-# 1 When a user is deleted, the related posts should be deleted too. 
-# 0 run all tests again then refill database
+# 17 make an all posts page
+# 16 change pretty datetime to a property and add a test for it
+# 15 add tags model
+# 14 add PostTag model
+# 13 Create tag page
+# 12 edit a tag page
+# 11 list of tags page
+# 10 show tag page
+# 9 show posts with tags page (edit)
+# 8 add posts with tags page (edit)
+# 7 edit posts with tags page (edit)
+# 6 create new routes for tags
+# 5 update routes for posts to allow tag adding
+# 4 update create tag page to allow connecting to posts
+# 3 update edit tag page to allow connecting to posts
+# 2 show tags on homepage
+# 1 write and run all tests
+# 0 refill database
