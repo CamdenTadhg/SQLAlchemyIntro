@@ -166,8 +166,10 @@ def delete_post(post_id):
     flash('Post deleted', 'success')
     return redirect(f'/users/{user.id}')
 
+@app.errorhandler(404)
+def page_not_found():
+    return render_template('404.html'), 404
 
-# 3 Use the flask flash message feature to notify about form errors/successful submissions
-# 2 Research how to make a custom page that appears when a 404 error happens in Flask. Make such a page
+
 # 1 When a user is deleted, the related posts should be deleted too. 
 # 0 run all tests again then refill database

@@ -231,9 +231,153 @@ class BloglyViewsTestCase(TestCase):
         with app.test_client() as client:
             test_post = db.session.execute(db.select(Post).where(Post.title == 'test post test')).scalar()
             post_id = test_post.id
-            user = test_post.user
             resp = client.post(f'/posts/{post_id}/delete', follow_redirects=True)
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
             self.assertNotIn('test post test', html)
+    
+    def test_no_first_name(self):
+        with app.test_client() as client:
+            resp = client.post('/users/new', data={'first-name': '', 'last-name': 'Tadhg', 'image-url':'https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png'})
+
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, '/users/new')
+
+    def test_no_first_name_redirect(self):
+        with app.test_client() as client:
+            resp = client.post('/users/new', data={'first-name': '', 'last-name': 'Tadhg', 'image-url':'https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png'}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual('No first name', html)
+    
+    def test_no_last_name(self):
+        with app.test_client() as client:
+            resp = client.post('/users/new', data={'first-name': 'Camden', 'last-name': '', 'image-url':'https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png'})
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, '/users/new')
+    
+    def test_no_last_name_redirect(self):
+        with app.test_client() as client:
+            resp = client.post('/users/new', data={'first-name': 'Camden', 'last-name': '', 'image-url':'https://www.google.com/images/branding/googlelogo/2x/googlelogo_light_color_272x92dp.png'}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertEqual('No last name', html)
+
+    def test_edit_no_first_name(self):
+        with app.test_client() as client:
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
+            user_id = test_user.id
+            resp = client.post(f'/users/{user_id}/edit', data={'first-name': '', 'last-name': 'Doe', 'image-url':'/static/user-profile-icon.png' })
+            
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, f'/users/{user_id}/edit')
+    
+    def test_edit_no_first_name_redirect(self):
+        with app.test_client() as client:
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
+            user_id = test_user.id
+            resp = client.post(f'/users/{user_id}/edit', data={'first-name': '', 'last-name': 'Doe', 'image-url':'/static/user-profile-icon.png' }, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('No first name', html)
+
+    def test_edit_no_last_name(self):
+        with app.test_client() as client:
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
+            user_id = test_user.id
+            resp = client.post(f'/users/{user_id}/edit', data={'first-name': 'John', 'last-name': '', 'image-url':'/static/user-profile-icon.png' })
+            
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, f'/users/{user_id}/edit')
+    
+    def test_edit_no_lst_name_redirect(self):
+        with app.test_client() as client:
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
+            user_id = test_user.id
+            resp = client.post(f'/users/{user_id}/edit', data={'first-name': 'John', 'last-name': '', 'image-url':'/static/user-profile-icon.png' }, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('No last name', html)
+
+    def test_no_title(self):
+        with app.test_client() as client:
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
+            user_id = test_user.id
+            resp = client.post(f'/users/{user_id}/posts/new', data={'title': '', 'content': 'this is a second test post'})
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, f'/users/{user_id}/posts/new')
+
+    def test_no_title_redirect(self):
+        with app.test_client() as client:
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
+            user_id = test_user.id
+            resp = client.post(f'/users/{user_id}/posts/new', data={'title': '', 'content': 'This is a second test post'}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('No title', html)
+
+    def test_no_content(self):
+        with app.test_client() as client:
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
+            user_id = test_user.id
+            resp = client.post(f'/users/{user_id}/posts/new', data={'title': 'test post', 'content': ''})
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, f'/users/{user_id}/posts/new')
+
+    def test_no_content_redirect(self):
+        with app.test_client() as client:
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
+            user_id = test_user.id
+            resp = client.post(f'/users/{user_id}/posts/new', data={'title': 'test post', 'content': ''}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('No content', html)
+
+    def test_edit_no_title(self):
+        with app.test_client() as client:
+            test_post = db.session.execute(db.select(Post).where(Post.title == 'test post test')).scalar()
+            post_id = test_post.id    
+            resp = client.post(f'/posts/{post_id}/edit', data={'title':'', 'content':'test post content'})
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, f'/posts/{post_id}/edit')
+    
+    def test_edit_no_title_redirect(self):
+        with app.test_client() as client:
+            test_post = db.session.execute(db.select(Post).where(Post.title == 'test post test')).scalar()
+            post_id = test_post.id  
+            resp = client.post(f'/posts/{post_id}/edit', data={'title':'', 'content':'test post content'}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('No title', html)
+
+    def test_edit_no_content(self):
+        with app.test_client() as client:
+            test_post = db.session.execute(db.select(Post).where(Post.title == 'test post test')).scalar()
+            post_id = test_post.id    
+            resp = client.post(f'/posts/{post_id}/edit', data={'title':'edited test post', 'content':''})
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, f'/posts/{post_id}/edit')
+    
+    def test_edit_no_content_redirect(self):
+        with app.test_client() as client:
+            test_post = db.session.execute(db.select(Post).where(Post.title == 'test post test')).scalar()
+            post_id = test_post.id  
+            resp = client.post(f'/posts/{post_id}/edit', data={'title':'edited test post', 'content':''}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('No content', html)
