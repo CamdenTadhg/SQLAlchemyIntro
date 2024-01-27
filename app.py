@@ -1,7 +1,7 @@
 """Blogly application."""
 
 from flask import Flask, request, render_template, redirect, flash
-from models import db, connect_db, User, Post
+from models import db, connect_db, User, Post, Tag, PostTag
 from flask_debugtoolbar import DebugToolbarExtension
 from datetime import datetime
 
@@ -107,6 +107,14 @@ def delete_user(user_id):
     flash('User profile deleted', 'success')
     return redirect('/users')
 
+#POST ROUTES
+
+@app.route('/posts')
+def show_posts():
+    """shows all posts"""
+    posts = db.session.execute(db.select(Post).order_by(Post.created_at.desc())).scalars()
+    return render_template('posts.html', posts=posts)
+
 @app.route('/users/<user_id>/posts/new')
 def show_new_post_form(user_id):
     """shows a form for adding a new post"""
@@ -129,14 +137,6 @@ def add_post(user_id):
     db.session.commit()
     flash('New post added', 'success')
     return redirect(f'/users/{user_id}')
-
-#POST ROUTES
-@app.route('/posts')
-def show_posts():
-    """shows all posts"""
-    posts = db.session.execute(db.select(Post).order_by(Post.created_at.desc())).scalars()
-    return render_template('posts.html', posts=posts)
-
 
 @app.route('/posts/<post_id>')
 def show_post(post_id):
@@ -181,22 +181,72 @@ def delete_post(post_id):
 
 #TAG ROUTES
 
+@app.route('/tags')
+def show_tags():
+    """shows all tags"""
+    tags = db.session.execute(db.select(Tag).order_by(Tag.name)).scalars()
+    return render_template('tags.html', tags=tags)
 
-# 17 make an all posts page
-# 16 change pretty datetime to a property and add a test for it
-# 15 add tags model
-# 14 add PostTag model
-# 13 Create tag page
-# 12 edit a tag page
-# 11 list of tags page
-# 10 show tag page
-# 9 show posts with tags page (edit)
-# 8 add posts with tags page (edit)
-# 7 edit posts with tags page (edit)
-# 6 create new routes for tags
-# 5 update routes for posts to allow tag adding
-# 4 update create tag page to allow connecting to posts
-# 3 update edit tag page to allow connecting to posts
-# 2 show tags on homepage
-# 1 write and run all tests
+@app.route('/tags/<tag_id>')
+def show_tag(tag_id):
+    """shows an individual tag and the associated posts"""
+    tag = Tag.query.get_or_404(tag_id)
+    return render_template('tagdetail.html', tag=tag)
+
+@app.route('/tags/new')
+def show_new_tag_form():
+    """shows a form for adding a new tag"""
+    return render_template("newtag.html")
+
+@app.route('/tags/new', methods=["POST"])
+def add_tag():
+    """adds new tag to database"""
+    name = request.form['name']
+    if name == '':
+        flash('No name added', 'error')
+        return redirect('/tags/new')
+    new_tag = Tag(name= name)
+    db.session.add(new_tag)
+    db.session.commit()
+    flash('New tag added', 'success')
+    return redirect('/tags')
+
+@app.route('/tags/<tag_id>/edit')
+def show_tag_edit_form(tag_id):
+    "shows the form for editing a tag"
+    tag = Tag.query.get_or_404(tag_id)
+    return render_template('tagedit.html', tag=tag)
+
+@app.route('/tags/<tag_id>/edit', methods=["POST"])
+def edit_tag(tag_id):
+    name = request.form['name']
+    if name == '':
+        flash('No name added', 'error')
+        return redirect(f'/tags/{tag_id}/edit')
+    tag = Tag.query.get_or_404(tag_id)
+    tag.name = name
+    db.session.add(tag)
+    db.session.commit()
+    flash('Tag changes saved', 'success')
+    return redirect(f'/tags/{tag_id}')
+
+@app.route('/tags/<tag_id>/delete', methods=["POST"])
+def delete_tag(tag_id):
+    """deletes tag"""
+    tag = Tag.query.get_or_404(tag_id)
+    Tag.query.filter_by(id=tag_id).delete()
+    db.session.commit()
+    flash('Tag deleted', 'success')
+    return redirect('/tags')
+
+# 6 update routes and pages for posts to allow tag adding
+    # new post page has checkboxes for tags
+    # route handles added tags appropriately
+    # edit post page has checkboxes for tags
+    # route handles added & removed tags appropriately
+# 5 update create tag page to allow connecting to posts
+# 4 update edit tag page to allow connecting to posts
+# 3 show tags on homepage
+# 2 write test for nice_date property
+# 1 write (including for /posts page) and run all tests
 # 0 refill database
