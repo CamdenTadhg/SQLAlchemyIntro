@@ -1,6 +1,6 @@
 """Blogly application."""
 
-from flask import Flask, request, render_template, redirect
+from flask import Flask, request, render_template, redirect, flash
 from models import db, connect_db, User, Post
 from flask_debugtoolbar import DebugToolbarExtension
 from datetime import datetime
@@ -41,7 +41,13 @@ def show_add_form():
 def add_user():
     """adds user to the database"""
     first_name = request.form["first-name"]
+    if first_name == '':
+        flash('No first name entered', 'error')
+        return redirect('/users/new')
     last_name = request.form["last-name"]
+    if last_name == '':
+        flash('No last name entered', 'error')
+        return redirect('/users/new')
     if request.form["image-url"]:
         image_url = request.form["image-url"]
     else:
@@ -49,6 +55,7 @@ def add_user():
     new_user = User(first_name = first_name, last_name = last_name, image_url=image_url)
     db.session.add(new_user)
     db.session.commit()
+    flash('New user created', 'success')
     return redirect('/users')
 
 @app.route('/users/<user_id>')
@@ -68,14 +75,23 @@ def show_edit_form(user_id):
 def edit_user(user_id):
     """edits user information in the database"""
     first_name = request.form["first-name"]
+    if first_name == '':
+        flash('No first name entered', 'error')
+        return redirect(f'/users/{user_id}/edit')
     last_name = request.form["last-name"]
+    if last_name == '':
+        flash('No last name entered', 'error')
+        return redirect(f'/users/{user_id}/edit')
     image_url = request.form["image-url"]
+    if image_url == '':
+        image_url = 'https://static.vecteezy.com/system/resources/previews/002/318/271/original/user-profile-icon-free-vector.jpg'
     user = User.query.get_or_404(user_id)
     user.first_name = first_name
     user.last_name = last_name
     user.image_url = image_url
     db.session.add(user)
     db.session.commit()
+    flash('User profile saved', 'success')
     return redirect('/users')
 
 @app.route('/users/<user_id>/delete', methods=["POST"])
@@ -83,6 +99,7 @@ def delete_user(user_id):
     """deletes user from the database"""
     User.query.filter_by(id=user_id).delete()
     db.session.commit()
+    flash('User profile deleted', 'success')
     return redirect('/users')
 
 @app.route('/users/<user_id>/posts/new')
@@ -95,10 +112,17 @@ def show_new_post_form(user_id):
 def add_post(user_id):
     """adds new post to appropriate user"""
     title = request.form['title']
+    if title == '':
+        flash('No title added', 'error')
+        return redirect(f'/users/{user_id}/posts/new')
     content = request.form['content']
+    if content == '':
+        flash('No content added', 'error')
+        return redirect(f'/users/{user_id}/posts/new')
     new_post = Post(title = title, content = content, created_at = datetime.now(), user_id = user_id)
     db.session.add(new_post)
     db.session.commit()
+    flash('New post added', 'success')
     return redirect(f'/users/{user_id}')
 
 @app.route('/posts/<post_id>')
@@ -117,12 +141,19 @@ def show_post_edit_form(post_id):
 @app.route('/posts/<post_id>/edit', methods=["POST"])
 def edit_post(post_id):
     title = request.form['title']
+    if title == '':
+        flash('No title added', 'error')
+        return redirect(f'/posts/{post_id}/edit')
     content = request.form['content']
+    if content == '':
+        flash('No content added', 'error')
+        return redirect(f'/posts/{post_id}/edit')
     post = Post.query.get_or_404(post_id)
     post.title = title
     post.content = content
     db.session.add(post)
     db.session.commit()
+    flash('Post changes saved', 'success')
     return redirect(f'/posts/{post_id}')
 
 @app.route('/posts/<post_id>/delete', methods=["POST"])
@@ -132,10 +163,10 @@ def delete_post(post_id):
     user = post.user
     Post.query.filter_by(id=post_id).delete()
     db.session.commit()
+    flash('Post deleted', 'success')
     return redirect(f'/users/{user.id}')
 
 
-# 4 When listing the posts (on the post index page, the homepage, and the user detail page), show a friendly-looking version of the date, like "May 1, 2015, 10:30AM"
 # 3 Use the flask flash message feature to notify about form errors/successful submissions
 # 2 Research how to make a custom page that appears when a 404 error happens in Flask. Make such a page
 # 1 When a user is deleted, the related posts should be deleted too. 

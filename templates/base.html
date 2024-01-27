@@ -10,6 +10,9 @@
     <div>
         <a href="/">Blogly Home</a>
     </div>
+    {% for category, msg in get_flashed_messages(with_categories=true) %}
+    <p class="{{category}}">{{msg}}</p>
+    {% endfor %}
 
     {% block content %}
     {% endblock %}
