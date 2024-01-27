@@ -36,20 +36,13 @@ class BloglyViewsTestCase(TestCase):
 
         db.session.rollback()
 
-    def test_redirection(self):
+    def test_home_page(self):
         with app.test_client() as client:
             resp = client.get('/')
-            
-            self.assertEqual(resp.status_code, 302)
-            self.assertEqual(resp.location, '/users')
-
-    def test_redirection_followed(self):
-        with app.test_client() as client: 
-            resp = client.get('/', follow_redirects=True)
             html = resp.get_data(as_text=True)
-
+            
             self.assertEqual(resp.status_code, 200)
-            self.assertIn('<h1>Users</h1>', html)
+            self.assertIn('Blogly Recent Posts', html)
 
     def test_show_user_list(self):
         with app.test_client() as client:
@@ -251,7 +244,7 @@ class BloglyViewsTestCase(TestCase):
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertEqual('No first name', html)
+            self.assertIn('No first name', html)
     
     def test_no_last_name(self):
         with app.test_client() as client:
@@ -266,7 +259,7 @@ class BloglyViewsTestCase(TestCase):
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
-            self.assertEqual('No last name', html)
+            self.assertIn('No last name', html)
 
     def test_edit_no_first_name(self):
         with app.test_client() as client:
