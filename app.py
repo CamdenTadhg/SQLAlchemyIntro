@@ -119,7 +119,8 @@ def show_posts():
 def show_new_post_form(user_id):
     """shows a form for adding a new post"""
     user = User.query.get_or_404(user_id)
-    return render_template("newpost.html", user=user)
+    tags = db.session.execute(db.select(Tag).order_by(Tag.name)).scalars()
+    return render_template("newpost.html", user=user, tags=tags)
 
 @app.route('/users/<user_id>/posts/new', methods=["POST"])
 def add_post(user_id):
@@ -135,6 +136,16 @@ def add_post(user_id):
     new_post = Post(title = title, content = content, created_at = datetime.now(), user_id = user_id)
     db.session.add(new_post)
     db.session.commit()
+    tags = request.form.getlist('tag')
+    for tag in tags: 
+        current_tag = db.session.execute(db.select(Tag).where(Tag.name == tag))
+        print('**************')
+        print('current tag is', current_tag)
+        print('new post is ', new_post)
+        print('**********')
+        new_post.tags.append(current_tag)
+        db.session.add(new_post)
+        db.session.commit()
     flash('New post added', 'success')
     return redirect(f'/users/{user_id}')
 
@@ -239,14 +250,12 @@ def delete_tag(tag_id):
     flash('Tag deleted', 'success')
     return redirect('/tags')
 
-# 6 update routes and pages for posts to allow tag adding
-    # new post page has checkboxes for tags
+# 5 update routes and pages for posts to allow tag adding
     # route handles added tags appropriately
     # edit post page has checkboxes for tags
     # route handles added & removed tags appropriately
-# 5 update create tag page to allow connecting to posts
-# 4 update edit tag page to allow connecting to posts
-# 3 show tags on homepage
-# 2 write test for nice_date property
-# 1 write (including for /posts page) and run all tests
+# 4 update create tag page to allow connecting to posts
+# 3 update edit tag page to allow connecting to posts
+# 2 write test for nice_date property and run all model tests
+# 1 write (including for /posts page) and run all route tests
 # 0 refill database
