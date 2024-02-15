@@ -225,6 +225,12 @@ def add_tag():
     new_tag = Tag(name= name)
     db.session.add(new_tag)
     db.session.commit()
+    posts = request.form.getlist('post')
+    for post in posts:
+        current_post = db.session.query(Post).filter(Post.title == post).first()
+        new_tag.posts.append(current_post)
+        db.session.add(new_tag)
+        db.session.commit()
     flash('New tag added', 'success')
     return redirect('/tags')
 
@@ -232,7 +238,8 @@ def add_tag():
 def show_tag_edit_form(tag_id):
     "shows the form for editing a tag"
     tag = Tag.query.get_or_404(tag_id)
-    return render_template('tagedit.html', tag=tag)
+    posts = db.session.execute(db.select(Post).order_by(Post.created_at)).scalars()
+    return render_template('tagedit.html', tag=tag, posts=posts)
 
 @app.route('/tags/<tag_id>/edit', methods=["POST"])
 def edit_tag(tag_id):
@@ -244,6 +251,14 @@ def edit_tag(tag_id):
     tag.name = name
     db.session.add(tag)
     db.session.commit()
+    PostTag.query.filter_by(tag_id=tag_id).delete()
+    db.session.commit()
+    posts = request.form.getlist('post')
+    for post in posts:
+        current_post = db.session.query(Post).filter(Post.title == post).first()
+        tag.posts.append(current_post)
+        db.session.add(tag)
+        db.session.commit()
     flash('Tag changes saved', 'success')
     return redirect(f'/tags/{tag_id}')
 
@@ -257,8 +272,6 @@ def delete_tag(tag_id):
 
 # 7 Fix deletion behavior for users, posts, and tags
     # awaiting on demand mentor call
-# 6 update create tag page to allow connecting to posts
-# 5 update edit tag page to allow connecting to posts
 # 4 write test for nice_date property and run all model tests
 # 3 write (including for /posts page) and run all route tests
 # 2 refill database

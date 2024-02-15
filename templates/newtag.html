@@ -10,5 +10,12 @@
         </label>
     <a class="btn btn-outline-primary" href="/tags">Cancel</a>
     <button class="btn btn-success" type="submit">Add</button>
+    <br>
+    {% for post in posts %}
+    <label for="post">
+        <input name="post" value="{{post.title}}" type="checkbox">{{post.title}}
+    </label>
+    <br>
+    {% endfor %}
 </form>
 {% endblock %}
