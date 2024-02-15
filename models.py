@@ -18,7 +18,7 @@ class User(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     image_url = db.Column(db.Text, nullable=False, default='https://static.vecteezy.com/system/resources/previews/002/318/271/original/user-profile-icon-free-vector.jpg')
 
-    posts = db.relationship('Post', backref="user", cascade="all, delete-orphan")
+    posts = db.relationship('Post', back_populates="user", cascade="all, delete-orphan")
 
     def __repr__(self):
         """show info about a user"""
@@ -40,6 +40,8 @@ class Post(db.Model):
     content = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
+
+    user = db.relationship('User', back_populates="posts")
 
     def __repr__(self):
         """show info about a post"""

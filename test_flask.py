@@ -20,7 +20,7 @@ class BloglyViewsTestCase(TestCase):
         Post.query.delete()
         User.query.delete()
         
-        user = User(first_name="Jane", last_name="Doe", image_url='/static/user-profile-icon.png')
+        user = User(first_name="Jane", last_name="Doe")
         db.session.add(user)
         db.session.commit()
 

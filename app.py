@@ -138,11 +138,7 @@ def add_post(user_id):
     db.session.commit()
     tags = request.form.getlist('tag')
     for tag in tags: 
-        current_tag = db.session.execute(db.select(Tag).where(Tag.name == tag))
-        print('**************')
-        print('current tag is', current_tag)
-        print('new post is ', new_post)
-        print('**********')
+        current_tag = db.session.query(Tag).filter(Tag.name == tag).first()
         new_post.tags.append(current_tag)
         db.session.add(new_post)
         db.session.commit()
@@ -160,7 +156,8 @@ def show_post(post_id):
 def show_post_edit_form(post_id):
     "shows the form for editing a post"
     post = Post.query.get_or_404(post_id)
-    return render_template('postedit.html', post=post)
+    tags = db.session.execute(db.select(Tag).order_by(Tag.name)).scalars()
+    return render_template('postedit.html', post=post, tags=tags)
 
 @app.route('/posts/<post_id>/edit', methods=["POST"])
 def edit_post(post_id):
@@ -177,6 +174,14 @@ def edit_post(post_id):
     post.content = content
     db.session.add(post)
     db.session.commit()
+    PostTag.query.filter_by(post_id=post_id).delete()
+    db.session.commit()
+    tags = request.form.getlist('tag')
+    for tag in tags:
+        current_tag = db.session.query(Tag).filter(Tag.name == tag).first()
+        post.tags.append(current_tag)
+        db.session.add(post)
+        db.session.commit()
     flash('Post changes saved', 'success')
     return redirect(f'/posts/{post_id}')
 
@@ -207,7 +212,8 @@ def show_tag(tag_id):
 @app.route('/tags/new')
 def show_new_tag_form():
     """shows a form for adding a new tag"""
-    return render_template("newtag.html")
+    posts = db.session.execute(db.select(Post).order_by(Post.created_at)).scalars()
+    return render_template("newtag.html", posts=posts)
 
 @app.route('/tags/new', methods=["POST"])
 def add_tag():
@@ -244,18 +250,16 @@ def edit_tag(tag_id):
 @app.route('/tags/<tag_id>/delete', methods=["POST"])
 def delete_tag(tag_id):
     """deletes tag"""
-    tag = Tag.query.get_or_404(tag_id)
     Tag.query.filter_by(id=tag_id).delete()
     db.session.commit()
     flash('Tag deleted', 'success')
     return redirect('/tags')
 
-# 5 update routes and pages for posts to allow tag adding
-    # route handles added tags appropriately
-    # edit post page has checkboxes for tags
-    # route handles added & removed tags appropriately
-# 4 update create tag page to allow connecting to posts
-# 3 update edit tag page to allow connecting to posts
-# 2 write test for nice_date property and run all model tests
-# 1 write (including for /posts page) and run all route tests
-# 0 refill database
+# 7 Fix deletion behavior for users, posts, and tags
+    # awaiting on demand mentor call
+# 6 update create tag page to allow connecting to posts
+# 5 update edit tag page to allow connecting to posts
+# 4 write test for nice_date property and run all model tests
+# 3 write (including for /posts page) and run all route tests
+# 2 refill database
+# 1 style site appropriately

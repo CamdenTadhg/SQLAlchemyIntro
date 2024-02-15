@@ -11,14 +11,15 @@
         <label for="content">Content
             <textarea name="content" rows="4" cols="50">{{post.content}}</textarea>
         </label>
+        <br>
         {% for tag in tags %}
         {% if tag in post.tags %}
-        <label for="{{tag}}">
-            <input name="{{tag}}" type="checkbox" checked>{{tag}}
+        <label for="tag">
+            <input name="tag" value="{{tag.name}}" type="checkbox" checked>{{tag.name}}
         </label>
         {% else %}
-        <label for="{{tag}}">
-            <input name="{{tag}}" type="checkbox">{{tag}}
+        <label for="tag">
+            <input name="tag" value="{{tag.name}}" type="checkbox">{{tag.name}}
         </label>
         {% endif %}
         {% endfor %}
