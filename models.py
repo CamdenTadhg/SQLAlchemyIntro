@@ -42,7 +42,6 @@ class Post(db.Model):
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
     user = db.relationship('User', back_populates="posts")
-    poststags = db.relationship('PostTag', backref="post", cascade="all, delete-orphan")
 
 
     def __repr__(self):
@@ -62,8 +61,7 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.Text, nullable=False, unique=True)
 
-    posts = db.relationship('Post', secondary='posts_tags', backref='tags')
-    poststags = db.relationship('PostTag', backref="tag", cascade="all, delete-orphan")
+    posts = db.relationship('Post', secondary='posts_tags', cascade="all, delete", backref='tags')
 
     def __repr__(self):
         """show info about a tag"""

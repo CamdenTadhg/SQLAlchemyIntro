@@ -270,9 +270,11 @@ def delete_tag(tag_id):
     flash('Tag deleted', 'success')
     return redirect('/tags')
 
-# 7 Fix deletion behavior for users, posts, and tags
-    # awaiting on demand mentor call
+# 6 create seed.py and run it
+# 5 write (including for /posts page) and run all route tests
 # 4 write test for nice_date property and run all model tests
-# 3 write (including for /posts page) and run all route tests
-# 2 refill database
-# 1 style site appropriately
+    # stuck here
+# 3 run seed file
+# 2 style site appropriately
+# 1 Fix deletion behavior for users, posts, and tags
+    # stuck here
