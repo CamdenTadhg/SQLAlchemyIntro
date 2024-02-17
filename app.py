@@ -102,7 +102,8 @@ def edit_user(user_id):
 @app.route('/users/<user_id>/delete', methods=["POST"])
 def delete_user(user_id):
     """deletes user from the database"""
-    User.query.filter_by(id=user_id).delete()
+    u=User.query.get(user_id)
+    db.session.delete(u)
     db.session.commit()
     flash('User profile deleted', 'success')
     return redirect('/users')
@@ -138,6 +139,9 @@ def add_post(user_id):
     db.session.commit()
     tags = request.form.getlist('tag')
     for tag in tags: 
+        print('************')
+        print(tag)
+        print('**************')
         current_tag = db.session.query(Tag).filter(Tag.name == tag).first()
         new_post.tags.append(current_tag)
         db.session.add(new_post)
@@ -190,7 +194,8 @@ def delete_post(post_id):
     """deletes post"""
     post = Post.query.get_or_404(post_id)
     user = post.user
-    Post.query.filter_by(id=post_id).delete()
+    p = Post.query.get(post_id)
+    db.session.delete(p)
     db.session.commit()
     flash('Post deleted', 'success')
     return redirect(f'/users/{user.id}')
@@ -265,16 +270,11 @@ def edit_tag(tag_id):
 @app.route('/tags/<tag_id>/delete', methods=["POST"])
 def delete_tag(tag_id):
     """deletes tag"""
-    Tag.query.filter_by(id=tag_id).delete()
+    t = Tag.query.get(tag_id)
+    db.session.delete(t)
     db.session.commit()
     flash('Tag deleted', 'success')
     return redirect('/tags')
 
-# 6 create seed.py and run it
-# 5 write (including for /posts page) and run all route tests
-# 4 write test for nice_date property and run all model tests
-    # stuck here
-# 3 run seed file
-# 2 style site appropriately
-# 1 Fix deletion behavior for users, posts, and tags
-    # stuck here
+
+# 1 style site appropriately

@@ -18,7 +18,7 @@ class User(db.Model):
     last_name = db.Column(db.String(50), nullable=False)
     image_url = db.Column(db.Text, nullable=False, default='https://static.vecteezy.com/system/resources/previews/002/318/271/original/user-profile-icon-free-vector.jpg')
 
-    posts = db.relationship('Post', back_populates="user", cascade="all, delete-orphan")
+    posts = db.relationship('Post', backref="user", cascade="all,delete")
 
     def __repr__(self):
         """show info about a user"""
@@ -41,7 +41,7 @@ class Post(db.Model):
     created_at = db.Column(db.DateTime, nullable=False, default=datetime.now)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'))
 
-    user = db.relationship('User', back_populates="posts")
+    # user = db.relationship('User', backrefs="posts")
 
 
     def __repr__(self):
@@ -61,7 +61,7 @@ class Tag(db.Model):
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.Text, nullable=False, unique=True)
 
-    posts = db.relationship('Post', secondary='posts_tags', cascade="all, delete", backref='tags')
+    posts = db.relationship('Post', secondary='posts_tags', backref='tags')
 
     def __repr__(self):
         """show info about a tag"""
@@ -74,3 +74,7 @@ class PostTag(db.Model):
 
     post_id = db.Column(db.Integer, db.ForeignKey('posts.id'), primary_key=True)
     tag_id = db.Column(db.Integer, db.ForeignKey('tags.id'), primary_key=True)
+
+    def __repr__(self):
+        """show data in line"""
+        return f"<PostTag {self.post_id} {self.tag_id}>"

@@ -15,7 +15,13 @@
 <h3>Posts</h3>
 <ul>
     {% for post in posts %}
-    <li><a href='/posts/{{post.id}}'>{{post.title}}</a>({{post.nice_date}})</li>
+    <li><a href='/posts/{{post.id}}'>{{post.title}}</a>
+        <span class="small">
+            {% for tag in post.tags %}
+            <span class="badge text-bg-primary"><a href='/tags/{{tag.id}}'>{{tag.name}}</a></span>
+            {% endfor %}
+        </span>
+        ({{post.nice_date}})</li>
     {% endfor %}
 </ul>
 <form action="/users/{{user.id}}/posts/new">

@@ -26,7 +26,7 @@ class UserModelTestCase(TestCase):
 
     def test_full_name(self):
         user = User(first_name="Camden", last_name="Tadhg")
-        self.assertEqual(user.full_name(), "Camden Tadhg")
+        self.assertEqual(user.full_name, "Camden Tadhg")
     
     def test_nice_date(self):
         user = User(first_name="Camden", last_name="Tadhg")
@@ -34,5 +34,5 @@ class UserModelTestCase(TestCase):
         db.session.commit()
         test_user = db.session.execute(db.select(User).where(User.first_name == 'Camden')).scalar()
         user_id=test_user.id
-        post = Post(title="test", content="test", created_at=datetime.now, user_id=user_id)
-        self.assertEqual(post.nice_date(), "Thr 02 15 2024 07:46 AM")
+        post = Post(title="test", content="test", created_at=datetime.now(), user_id=user_id)
+        self.assertEqual(post.nice_date, "Thr 02 15 2024, 08:55 AM")

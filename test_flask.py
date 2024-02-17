@@ -1,7 +1,7 @@
 from unittest import TestCase
 
 from app import app
-from models import db, User, Post
+from models import db, User, Post, Tag, PostTag
 
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql:///blogly_test'
 app.config['SQLALCHEMY_ECHO'] = False
@@ -17,7 +17,9 @@ class BloglyViewsTestCase(TestCase):
     def setUp(self):
         """Add sample user and sample post."""
 
+        PostTag.query.delete()
         Post.query.delete()
+        Tag.query.delete()
         User.query.delete()
         
         user = User(first_name="Jane", last_name="Doe")
@@ -29,6 +31,14 @@ class BloglyViewsTestCase(TestCase):
 
         post = Post(title="test post test", content="test post content", user_id = user.id)
         db.session.add(post)
+        db.session.commit()
+
+        tag = Tag(name="testing")
+        db.session.add(tag)
+        db.session.commit()
+
+        post_tag=PostTag(post_id = post.id, tag_id=tag.id)
+        db.session.add(post_tag)
         db.session.commit()
 
     def tearDown(self):
@@ -122,15 +132,14 @@ class BloglyViewsTestCase(TestCase):
 
     def test_delete_user(self):
         with app.test_client() as client:
-            Post.query.delete()
-            resp = client.post('/users/1/delete')
+            test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
+            resp = client.post(f'/users/{test_user.id}/delete')
             
             self.assertEqual(resp.status_code, 302)
             self.assertEqual(resp.location, '/users')
 
     def test_delete_user_redirect(self):
         with app.test_client() as client:
-            Post.query.delete()
             test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
             user_id = test_user.id
             resp = client.post(f'/users/{user_id}/delete', follow_redirects=True)
@@ -138,6 +147,15 @@ class BloglyViewsTestCase(TestCase):
 
             self.assertEqual(resp.status_code, 200)
             self.assertNotIn('Jane Doe', html)
+
+    def test_show_posts(self):
+        with app.test_client() as client:
+            resp = client.get('/posts')
+            html=resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('test post test', html)
+            self.assertIn('testing', html)
 
     def test_show_new_post_form(self):
         with app.test_client() as client:
@@ -163,11 +181,12 @@ class BloglyViewsTestCase(TestCase):
         with app.test_client() as client:
             test_user = db.session.execute(db.select(User).where(User.first_name == 'Jane')).scalar()
             user_id = test_user.id
-            resp = client.post(f'/users/{user_id}/posts/new', data={'title': 'test post 2', 'content': 'This is a second test post'}, follow_redirects=True)
+            resp = client.post(f'/users/{user_id}/posts/new', data={'title': 'test post 2', 'content': 'This is a second test post', 'tag': ['testing']}, follow_redirects=True)
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
             self.assertIn('test post 2', html)
+            self.assertIn('testing', html)
     
     def test_show_post(self):
         with app.test_client() as client:
@@ -179,6 +198,7 @@ class BloglyViewsTestCase(TestCase):
             self.assertEqual(resp.status_code, 200)
             self.assertIn('test post test', html)
             self.assertIn('Jane Doe', html)
+            self.assertIn('testing', html)
 
     def test_show_post_edit_form(self):
         with app.test_client() as client:
@@ -204,11 +224,12 @@ class BloglyViewsTestCase(TestCase):
         with app.test_client() as client:
             test_post = db.session.execute(db.select(Post).where(Post.title == 'test post test')).scalar()
             post_id = test_post.id  
-            resp = client.post(f'/posts/{post_id}/edit', data={'title':'edited test post', 'content':'test post content'}, follow_redirects=True)
+            resp = client.post(f'/posts/{post_id}/edit', data={'title':'edited test post', 'content':'test post content', 'tag': []}, follow_redirects=True)
             html = resp.get_data(as_text=True)
 
             self.assertEqual(resp.status_code, 200)
             self.assertIn('edited test post', html)
+            self.assertNotIn('testing', html)
     
     def test_delete_post(self):
         with app.test_client() as client:
@@ -374,3 +395,94 @@ class BloglyViewsTestCase(TestCase):
 
             self.assertEqual(resp.status_code, 200)
             self.assertIn('No content', html)
+
+    def test_show_tags(self):
+        with app.test_client() as client:
+            resp = client.get('/tags')
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('testing', html)
+
+    def test_show_tag(self):
+        with app.test_client() as client:
+            test_tag = db.session.execute(db.select(Tag).where(Tag.name == 'testing')).scalar()
+            tag_id = test_tag.id
+            resp = client.get(f'/tags/{tag_id}')
+            html=resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('testing', html)
+            self.assertIn('test post test', html)
+    
+    def test_show_new_tag_form(self):
+        with app.test_client() as client:
+            resp = client.get('tags/new')
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Create a new tag', html)
+
+    def test_add_tag(self):
+        with app.test_client() as client:
+            resp = client.post('/tags/new', data={'name': 'moretesting'})
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, '/tags')
+
+    def test_add_tag_redirect(self):
+        with app.test_client() as client:
+            test_post = db.session.execute(db.select(Post).where(Post.title == "test post test")).scalar()
+            resp = client.post('/tags/new', data={'name': 'moretesting', 'post': ["test post test"]}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('moretesting', html)
+            self.assertIn('moretesting', str(test_post.tags))
+    
+    def test_show_tag_edit_form(self):
+        with app.test_client() as client:
+            test_tag = db.session.execute(db.select(Tag).where(Tag.name == "testing")).scalar()
+            resp = client.get(f'/tags/{test_tag.id}/edit')
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('Edit a tag', html)
+
+    def test_edit_tag(self):
+        with app.test_client() as client: 
+            test_tag = db.session.execute(db.select(Tag).where(Tag.name == "testing")).scalar()
+            resp = client.post(f'/tags/{test_tag.id}/edit', data={'name':'testing'})
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, f'/tags/{test_tag.id}')
+
+    def test_edit_tag_redirect(self):
+        with app.test_client() as client:
+            test_tag = db.session.execute(db.select(Tag).where(Tag.name == "testing")).scalar()
+            test_post = db.session.execute(db.select(Post).where(Post.title == 'test post test')).scalar()
+            resp = client.post(f'/tags/{test_tag.id}/edit', data={'name': 'testing2', 'post': []}, follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertIn('testing2', html)
+            self.assertNotIn('testing2', str(test_post.tags))
+            
+    def test_delete_tag(self):
+        with app.test_client() as client:
+            test_tag = db.session.execute(db.select(Tag).where(Tag.name == 'testing')).scalar()
+            tag_id = test_tag.id
+            resp = client.post(f'/tags/{tag_id}/delete')
+
+            self.assertEqual(resp.status_code, 302)
+            self.assertEqual(resp.location, '/tags')
+
+    def test_delete_tag_redirect(self):
+        with app.test_client() as client:
+            test_tag = db.session.execute(db.select(Tag).where(Tag.name == "testing")).scalar()
+            tag_id = test_tag.id
+            resp = client.post(f'/tags/{tag_id}/delete', follow_redirects=True)
+            html = resp.get_data(as_text=True)
+
+            self.assertEqual(resp.status_code, 200)
+            self.assertNotIn('testing', html)
